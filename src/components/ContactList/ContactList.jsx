@@ -1,27 +1,30 @@
-import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+
 import ContactItem from 'components/ContactItem/ContactItem';
-import style from 'components/ContactList/ContactList.module.css'
-import { useSelector } from 'react-redux';
-import { getContacts, getFilter } from 'redux/selectors';
-import {deleteContact, fetchContacts} from 'redux/contactsAPI';
+import Loader from 'components/Loader';
 
-const ContactsList = () => {
+import { fetchContacts } from 'redux/Contacts/operations';
+import {
+  selectContacts,
+  selectError,
+  selectFilter,
+  selectIsLoading,
+} from 'redux/Contacts/selectors';
+
+import css from './ContactList.module.css';
+
+const ContactList = () => {
+  const filter = useSelector(selectFilter);
   const dispatch = useDispatch();
-
-  const onDelete = (id) => {
-    dispatch(deleteContact(id));
-  };
-
-  const filter = useSelector(getFilter);
-  
 
   useEffect(() => {
     dispatch(fetchContacts());
   }, [dispatch]);
 
-  const { contacts } = useSelector(getContacts);
+  const contacts = useSelector(selectContacts);
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
 
   const filterContacts = () => {
     if (filter !== '') {
@@ -33,35 +36,29 @@ const ContactsList = () => {
   };
 
   const filteredContacts = filterContacts();
+
   return (
-    <ul className={style.contacts__list}>
+    <>
+      {isLoading && (
+        <div className="backdrop">
+          <Loader />
+        </div>
+      )}
       {filteredContacts && filteredContacts.length > 0 ? (
-        filterContacts().map(({ id, name, phone}) => {
-          return (
-            <ContactItem
-            key={id}
-            id={id}
-            name={name}
-            number={phone}
-            onClick={onDelete}
-          />
-        );
-        })
-  )  : 'No matches found'}
-    </ul>
-  )
-  };
-  
-  ContactsList.propTypes = {
-    contacts: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        number: PropTypes.string.isRequired,
-      })
-    ),
-    deleteContact: PropTypes.func,
-  };
-  
-  export default ContactsList;
-  
+        <ul className={css['contact-list']}>
+          {filteredContacts.map(({ id, name, number }) => {
+            return <ContactItem key={id} id={id} name={name} number={number} />;
+          })}
+        </ul>
+      ) : error ? (
+        <p className={css['error-text']}>{error}</p>
+      ) : (
+        <div>
+          <p className={css['no-contact-text']}>Sorry, no contacts found</p>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default ContactList;

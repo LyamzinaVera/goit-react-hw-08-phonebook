@@ -1,16 +1,51 @@
-import ContactForm from './ContactForm/ContactForm.jsx';
-import ContactsList from './ContactList/ContactList.jsx';
-import Filter from './Filter/Filter.jsx';
-import style from './App.module.css'
+import { useEffect, lazy } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 
-export default function App(){
-  return (
-    <div className={style.container}>
-      <h1>Phonebook</h1>
-      <ContactForm/>
-      <h2>Contacts</h2>
-      <Filter/>
-      <ContactsList/>
-    </div> 
+import SharedLayout from './SharedLayout';
+import { PrivateRoute } from 'components/PrivateRoute';
+import { PublicRoute } from 'components/PublicRoute';
+
+import { selectIsRefreshing } from 'redux/Auth/selectors';
+import { refreshUser } from 'redux/Auth/operations';
+
+const Home = lazy(() => import('../pages/home/Home'));
+const Register = lazy(() => import('../pages/Register'));
+const LogIn = lazy(() => import('../pages/LogIn'));
+const Contacts = lazy(() => import('../pages/contacts/Contacts'));
+
+const App = () => {
+  const isRefreshing = useSelector(selectIsRefreshing);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(refreshUser());
+  }, [dispatch]);
+
+  return isRefreshing ? (
+    <div className="backdrop"></div>
+  ) : (
+    <Routes>
+      <Route path="/" element={<SharedLayout />}>
+        <Route index element={<Home />} />
+        <Route
+          path="/contacts"
+          element={<PrivateRoute redirectTo="/" component={<Contacts />} />}
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute redirectTo="/contacts" component={<Register />} />
+          }
+        />
+        <Route
+          path="/log-in"
+          element={<PublicRoute redirectTo="/contacts" component={<LogIn />} />}
+        />
+        <Route path="*" element={<Home />} />
+      </Route>
+    </Routes>
   );
-  }
+};
+
+export default App;

@@ -1,79 +1,88 @@
-
-import React,{ useState } from 'react';
+import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addContact } from 'redux/contactsAPI';
-import { getContacts } from 'redux/selectors';
-import PropTypes from 'prop-types';
-import shortid from 'shortid';
-import style from 'components/ContactForm/ContactForm.module.css'
+import { addContact } from 'redux/Contacts/operations';
+import { selectContacts } from 'redux/Contacts/selectors';
+import css from './ContactForm.module.css';
 
-export default function ContactForm(){
-
+const ContactForm = () => {
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
- 
-  const { contacts } = useSelector(getContacts);
+  const [number, setNumber] = useState('');
+
+  const contacts = useSelector(selectContacts);
+
   const dispatch = useDispatch();
 
-  const handleNameChange = e => {
-    setName(e.currentTarget.value);
-  }
-    const handleNumberChange = e => {
-      setPhone(e.currentTarget.value);
-    };
+  const handleInput = event => {
+    const { name, value } = event.currentTarget;
 
- const handleSubmit = e => {
-  e.preventDefault();
-   if (contacts) {
-     const existingContact = contacts.find(contact => contact.name.toLowerCase() === name.toLowerCase());
-     if (existingContact) {
-       alert(`${name} is already in contacts`);
-     } else {
-       const newContact = {
-         name,
-         phone,
-         id: shortid.generate(),
-       };
-       dispatch(addContact(newContact));
-       setName('');
-       setPhone('');
-     }
-   }
-};
-  
-    return (
-      <div className={style.border}>
-        <form className={style.form} onSubmit={handleSubmit}>
-          <label className={style.label}>Name</label>
-          <input
-              className={style.input}
-              type="text"
-              name="name"
-              value={name}
-              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-              title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-              required
-              onChange={handleNameChange}
-            />
-          <label className={style.label}>Number</label>
-          <input
-              className={style.input}
-              type="tel"
-              name="number"
-              value={phone}
-              pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-              title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-              required
-              onChange={handleNumberChange}
-            />
-          <button className={style.button} type="submit">Add contact</button>
-        </form>
-      </div>
-    );
-  }
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
 
+      case 'number':
+        setNumber(value);
+        break;
 
-  ContactForm.propTypes = {
-    handleSubmit: PropTypes.func
+      default:
+        console.warn(`field type name - ${name} can't be managed`);
+    }
   };
-  
+
+  const handleSubmit = evt => {
+    evt.preventDefault();
+    if (
+      contacts.find(
+        contact => contact.name.toLowerCase() === name.toLowerCase()
+      )
+    ) {
+      window.alert(`We ara sorry, contact ${name} has already existed`);
+      return;
+    }
+    dispatch(addContact({ name, number }));
+    reset();
+  };
+
+  const reset = () => {
+    setName('');
+    setNumber('');
+  };
+
+  return (
+    <form className={css['phonebook-form']} onSubmit={handleSubmit}>
+      <div className={css.wrapper}>
+        <label className={css['phonebook-label']}>
+          <span className={css['phonebook-label-text']}>Name</span>
+          <input
+            className={css['phonebook-input']}
+            type="text"
+            name="name"
+            pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+            required
+            value={name}
+            onChange={handleInput}
+          />
+        </label>
+        <label className={css['phonebook-label']}>
+          <span className={css['phonebook-label-text']}>Number</span>
+          <input
+            className={css['phonebook-input']}
+            type="tel"
+            name="number"
+            pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+            required
+            value={number}
+            onChange={handleInput}
+          />
+        </label>
+      </div>
+      <button className={css['phonebook-form-btn']} type="submit">
+        Add contact
+      </button>
+    </form>
+  );
+};
+
+export default ContactForm;

@@ -1,6 +1,31 @@
-.contacts__item {
-    width: 350px;
+.contact-list-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    margin-bottom: 15px;
+}
+
+.contact-name-text {
+    font-weight: 700;
+}
+
+.delete-contact-btn {
+    min-width: 80px;
+    border: 2px solid #37aa2f;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.87;
+    text-align: center;
+    letter-spacing: 0.06em;
+    background-color: #37aa2f;
+    cursor: pointer;
+    transition: border-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.delete-contact-btn:hover,
+.delete-contact-btn:focus {
+    border-color: #13a41f;
+    color: #13a41f;
+    box-shadow: 0px 0px 14px rgb(63, 191, 28);
 }
